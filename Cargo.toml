@@ -1,5 +1,5 @@
 [package]
-name = "itugl-rs"
+name = "itugl"
 version = "0.1.0"
 edition = "2021"
 
