@@ -1,8 +1,10 @@
 use std::{
     ffi::{CStr, CString},
+    mem,
     ptr::null,
 };
 
+use gl::EnableVertexAttribArray;
 use glfw::{fail_on_errors, Action, Context, Key};
 
 // settings
@@ -21,7 +23,7 @@ fn main() {
             glfw::WindowMode::Windowed,
         )
         .expect("Failed to create GLFW window.");
-
+    gl::load_with(|s| glfw.get_proc_address_raw(s));
     // Make the window's context current
     window.make_current();
 
@@ -30,6 +32,44 @@ fn main() {
         0.5, -0.5, 0.0, // right
         0.0, 0.5, 0.0, // top
     ];
+
+    let shader_program = build_shader_program();
+
+    let mut vao = 0;
+    let mut vbo = 0;
+    unsafe { gl::GenVertexArrays(1, &mut vao) };
+    unsafe { gl::GenBuffers(1, &mut vbo) };
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    unsafe { gl::BindVertexArray(vao) };
+
+    unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, vbo) };
+    unsafe {
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+            vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+            gl::STATIC_DRAW,
+        )
+    };
+
+    unsafe {
+        gl::VertexAttribPointer(
+            0,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            3 * mem::size_of::<f32>() as i32,
+            std::ptr::null(),
+        )
+    };
+    unsafe { gl::EnableVertexAttribArray(0) };
+
+    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+    unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, 0) };
+
+    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+    unsafe { gl::BindVertexArray(0) };
 
     // Loop until the user closes the window
     while !window.should_close() {
@@ -57,7 +97,7 @@ layout (location = 0) in vec3 aPos;
 void main()
 {
 gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-};",
+};\0",
     )
     .unwrap();
     let fragment_shader_source = &CStr::from_bytes_with_nul(
@@ -66,7 +106,7 @@ out vec4 FragColor;
 void main()
 {
 FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-};",
+};\0",
     )
     .unwrap();
 
