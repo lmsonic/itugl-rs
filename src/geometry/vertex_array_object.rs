@@ -58,6 +58,10 @@ impl VertexArrayObject {
         // Finally, we enable the VertexAttribute in this location
         unsafe { gl::EnableVertexAttribArray(location) };
     }
+
+    pub fn unbind(&self) {
+        unsafe { gl::BindVertexArray(NullHandle) };
+    }
 }
 
 impl Default for VertexArrayObject {

@@ -8,6 +8,8 @@ use gl::EnableVertexAttribArray;
 use glfw::{fail_on_errors, Action, Context, Key};
 use itugl::{
     application,
+    core::object::Object,
+    geometry::{vertex_array_object::VertexArrayObject, vertex_attribute::VertexAttribute},
     shader::{self, Program, Shader},
 };
 
@@ -42,23 +44,14 @@ fn main() {
         gl::BindBuffer(gl::ARRAY_BUFFER, 0);
     };
 
-    let mut vao: gl::types::GLuint = 0;
-    unsafe { gl::GenVertexArrays(1, &mut vao) };
-    unsafe {
-        gl::BindVertexArray(vao);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::EnableVertexAttribArray(0);
-        gl::VertexAttribPointer(
-            0,         // index of the generic vertex attribute ("layout (location = 0)")
-            3,         // the number of components per generic vertex attribute
-            gl::FLOAT, // data type
-            gl::FALSE, // normalized (int-to-float conversion)
-            (3 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
-            std::ptr::null(),                                     // offset of the first component
-        );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        gl::BindVertexArray(0);
-    };
+    let vao = VertexArrayObject::new();
+    let attributes = VertexAttribute::new(itugl::core::data::Type::Float, 3, false);
+    vao.bind();
+    unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, vbo) };
+    vao.set_attribute(0, &attributes, 0, 0);
+    unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, 0) };
+    vao.unbind();
+
     let size = window.inner_window.get_size();
     window.set_viewport(size.0, size.1);
     window.clear(0.3, 0.3, 0.5, 1.0);
@@ -69,7 +62,7 @@ fn main() {
 
         // draw our first triangle
         shader_program.set_used();
-        unsafe { gl::BindVertexArray(vao) };
+        vao.bind();
         unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3) };
 
         // Swap front and back buffers
