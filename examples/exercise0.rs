@@ -60,29 +60,12 @@ fn main() {
         gl::BindVertexArray(0);
     };
     let size = window.inner_window.get_size();
-    unsafe {
-        gl::Viewport(0, 0, size.0, size.1);
-        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
-    }
+    window.set_viewport(size.0, size.1);
+    window.clear(0.3, 0.3, 0.5, 1.0);
 
     // Loop until the user closes the window
     while !window.inner_window.should_close() {
-        for (_, event) in glfw::flush_messages(&window.events) {
-            println!("{:?}", event);
-            match event {
-                glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
-                    window.inner_window.set_should_close(true)
-                }
-                glfw::WindowEvent::FramebufferSize(width, height) => {
-                    // make sure the viewport matches the new window dimensions; note that width and
-                    // height will be significantly larger than specified on retina displays.
-                    unsafe { gl::Viewport(0, 0, width, height) }
-                }
-
-                _ => {}
-            }
-        }
-        unsafe { gl::Clear(gl::COLOR_BUFFER_BIT) };
+        window.clear(0.3, 0.3, 0.5, 1.0);
 
         // draw our first triangle
         shader_program.set_used();
@@ -92,6 +75,21 @@ fn main() {
         // Swap front and back buffers
         window.inner_window.swap_buffers();
         window.glfw_mut().poll_events();
+        for (_, event) in glfw::flush_messages(&window.events) {
+            println!("{:?}", event);
+            match event {
+                glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
+                    window.inner_window.set_should_close(true)
+                }
+                glfw::WindowEvent::FramebufferSize(width, height) => {
+                    // make sure the viewport matches the new window dimensions; note that width and
+                    // height will be significantly larger than specified on retina displays.
+                    window.set_viewport(width, height);
+                }
+
+                _ => {}
+            }
+        }
     }
 }
 

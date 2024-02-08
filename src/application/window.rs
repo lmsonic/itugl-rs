@@ -25,9 +25,21 @@ impl Window {
         // Make the window's context current
         inner_window.make_current();
         gl::load_with(|s| glfw.get_proc_address_raw(s));
+        inner_window.set_key_polling(true);
         Self {
             inner_window,
             events,
         }
+    }
+
+    pub fn clear(&self, r: f32, g: f32, b: f32, a: f32) {
+        unsafe {
+            gl::ClearColor(r, g, b, a);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        };
+    }
+
+    pub fn set_viewport(&self, width: i32, height: i32) {
+        unsafe { gl::Viewport(0, 0, width, height) };
     }
 }
