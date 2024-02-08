@@ -1,5 +1,3 @@
-use std::ops::{Deref, DerefMut};
-
 use glfw::{fail_on_errors, Context, GlfwReceiver, PWindow, WindowEvent, WindowMode};
 
 pub struct Window {

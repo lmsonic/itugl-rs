@@ -1,4 +1,4 @@
-use std::{mem, os::raw::c_void, ptr::null};
+use std::{os::raw::c_void, ptr::null};
 
 use gl::types::{GLenum, GLsizeiptr};
 

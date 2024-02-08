@@ -1,11 +1,7 @@
-use std::{
-    ffi::{CStr, CString},
-    mem,
-    ptr::null,
-};
+use std::{f32::consts::PI, ffi::CString, ptr::null};
 
-use gl::EnableVertexAttribArray;
-use glfw::{fail_on_errors, Action, Context, Key};
+use gl::types::GLsizei;
+use glfw::{Action, Context, Key};
 use itugl::{
     application,
     core::{
@@ -13,8 +9,8 @@ use itugl::{
         object::Object,
     },
     geometry::{
-        vertex_array_object::VertexArrayObject, vertex_attribute::VertexAttribute,
-        vertex_buffer_object::VertexBufferObject,
+        element_buffer_object::ElementBufferObject, vertex_array_object::VertexArrayObject,
+        vertex_attribute::VertexAttribute, vertex_buffer_object::VertexBufferObject,
     },
     shader::{self, Program, Shader},
 };
@@ -32,22 +28,49 @@ fn main() {
         glfw::WindowMode::Windowed,
     );
 
-    let vertices: [f32; 9] = [-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0];
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+    let sides = 16;
+    let length = 0.5 * f32::sqrt(2.0);
+
+    // Using std::array instead of regular arrays makes sure we don't access out of range
+    let mut vertices = vec![0.0; 3 * (sides + 1)];
+    let mut indices: Vec<u32> = vec![0; 3 * sides];
+
+    // Loop over 2*PI with N sides
+    let delta_angle = 2.0 * PI / sides as f32;
+    for i in 0..sides {
+        let angle = i as f32 * delta_angle;
+        vertices[3 * i + 3] = f32::sin(angle) * length;
+        vertices[3 * i + 4] = f32::cos(angle) * length;
+        vertices[3 * i + 5] = 0.0;
+
+        indices[3 * i] = 0;
+        indices[3 * i + 1] = (i + 1) as u32;
+        indices[3 * i + 2] = (i + 2) as u32;
+    }
+
+    // Connect last index with vertex 1 to close the circle
+    indices[3 * sides - 1] = 1;
 
     let shader_program = build_shader_program();
 
     let vbo = VertexBufferObject::new();
     vbo.bind();
     vbo.allocate_data(&vertices, Usage::StaticDraw);
-    vbo.unbind();
+
+    let ebo = ElementBufferObject::new();
+    ebo.bind();
+    ebo.allocate_data(&indices, Usage::StaticDraw);
 
     let vao = VertexArrayObject::new();
     let attributes = VertexAttribute::new(itugl::core::data::Type::Float, 3, false);
     vao.bind();
-    vbo.bind();
     vao.set_attribute(0, &attributes, 0, 0);
+
     vbo.unbind();
     vao.unbind();
+    ebo.unbind();
 
     let size = window.inner_window.get_size();
     window.set_viewport(size.0, size.1);
@@ -60,7 +83,14 @@ fn main() {
         // draw our first triangle
         shader_program.set_used();
         vao.bind();
-        unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3) };
+        unsafe {
+            gl::DrawElements(
+                gl::TRIANGLES,
+                indices.len() as GLsizei,
+                gl::UNSIGNED_INT,
+                null(),
+            )
+        };
 
         // Swap front and back buffers
         window.inner_window.swap_buffers();
