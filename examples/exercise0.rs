@@ -8,8 +8,14 @@ use gl::EnableVertexAttribArray;
 use glfw::{fail_on_errors, Action, Context, Key};
 use itugl::{
     application,
-    core::object::Object,
-    geometry::{vertex_array_object::VertexArrayObject, vertex_attribute::VertexAttribute},
+    core::{
+        buffer_object::{BufferObject, Usage},
+        object::Object,
+    },
+    geometry::{
+        vertex_array_object::VertexArrayObject, vertex_attribute::VertexAttribute,
+        vertex_buffer_object::VertexBufferObject,
+    },
     shader::{self, Program, Shader},
 };
 
@@ -30,26 +36,17 @@ fn main() {
 
     let shader_program = build_shader_program();
 
-    let mut vbo: gl::types::GLuint = 0;
-    unsafe { gl::GenBuffers(1, &mut vbo) };
-
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
-            vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
-            gl::STATIC_DRAW,
-        );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-    };
+    let vbo = VertexBufferObject::new();
+    vbo.bind();
+    vbo.allocate_data(&vertices, Usage::StaticDraw);
+    vbo.unbind();
 
     let vao = VertexArrayObject::new();
     let attributes = VertexAttribute::new(itugl::core::data::Type::Float, 3, false);
     vao.bind();
-    unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, vbo) };
+    vbo.bind();
     vao.set_attribute(0, &attributes, 0, 0);
-    unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, 0) };
+    vbo.unbind();
     vao.unbind();
 
     let size = window.inner_window.get_size();
