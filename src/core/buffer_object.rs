@@ -2,6 +2,8 @@ use std::{os::raw::c_void, ptr::null};
 
 use gl::types::{GLenum, GLsizeiptr};
 
+use crate::error::check_gl_error;
+
 use super::object::{NullHandle, Object};
 #[repr(u32)]
 pub enum Target {
@@ -26,19 +28,24 @@ pub enum Usage {
 pub trait BufferObject: Object {
     fn unbind(&self) {
         unsafe { gl::BindBuffer(self.target() as u32, NullHandle) }
+        check_gl_error();
     }
     fn target(&self) -> Target;
     fn allocate_data<T>(&self, data: &[T], usage: Usage) {
+        self.bind();
         unsafe {
             gl::BufferData(
                 self.target() as GLenum,
-                std::mem::size_of_val(data) as isize,
-                data as *const _ as *const c_void,
+                std::mem::size_of_val(data) as gl::types::GLsizeiptr,
+                data.as_ptr() as *const gl::types::GLvoid,
                 usage as GLenum,
             );
         }
+        self.unbind();
+        check_gl_error();
     }
     fn reserve_data(&self, size: GLsizeiptr, usage: Usage) {
+        self.bind();
         unsafe {
             gl::BufferData(
                 self.target() as GLenum,
@@ -47,15 +54,20 @@ pub trait BufferObject: Object {
                 usage as GLenum,
             );
         }
+        self.unbind();
+        check_gl_error();
     }
     fn update_data<T>(&self, data: &[T], offset: GLsizeiptr) {
+        self.bind();
         unsafe {
             gl::BufferSubData(
                 self.target() as GLenum,
                 offset,
-                std::mem::size_of_val(data) as isize,
-                data as *const _ as *const c_void,
+                std::mem::size_of_val(data) as gl::types::GLsizeiptr,
+                data.as_ptr() as *const gl::types::GLvoid,
             );
         }
+        self.unbind();
+        check_gl_error();
     }
 }

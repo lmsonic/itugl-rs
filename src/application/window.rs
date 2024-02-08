@@ -1,4 +1,7 @@
+use gl::types::GLvoid;
 use glfw::{fail_on_errors, Context, GlfwReceiver, PWindow, WindowEvent, WindowMode};
+
+use crate::error::check_gl_error;
 
 pub struct Window {
     pub inner_window: PWindow,
@@ -22,8 +25,18 @@ impl Window {
             .expect("Failed to create GLFW window.");
         // Make the window's context current
         inner_window.make_current();
-        gl::load_with(|s| glfw.get_proc_address_raw(s));
         inner_window.set_key_polling(true);
+        gl::load_with(|s| glfw.get_proc_address_raw(s));
+
+        unsafe { gl::Enable(gl::DEBUG_OUTPUT) }
+        unsafe {
+            gl::DebugMessageCallback(
+                Some(crate::error::debug_callback),
+                std::ptr::null_mut::<GLvoid>(),
+            )
+        };
+        check_gl_error();
+
         Self {
             inner_window,
             events,
@@ -35,9 +48,11 @@ impl Window {
             gl::ClearColor(r, g, b, a);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         };
+        check_gl_error();
     }
 
     pub fn set_viewport(&self, width: i32, height: i32) {
         unsafe { gl::Viewport(0, 0, width, height) };
+        check_gl_error();
     }
 }

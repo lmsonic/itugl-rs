@@ -2,7 +2,10 @@ use std::{ffi::c_void, ptr::null_mut};
 
 use gl::types::{GLenum, GLint, GLsizei, GLuint};
 
-use crate::core::object::{Handle, NullHandle, Object};
+use crate::{
+    core::object::{Handle, NullHandle, Object},
+    error::check_gl_error,
+};
 
 use super::vertex_attribute::VertexAttribute;
 
@@ -14,6 +17,7 @@ pub struct VertexArrayObject {
 impl Drop for VertexArrayObject {
     fn drop(&mut self) {
         unsafe { gl::DeleteVertexArrays(1, &self.handle) };
+        check_gl_error();
     }
 }
 
@@ -21,6 +25,7 @@ impl VertexArrayObject {
     pub fn new() -> Self {
         let mut handle = NullHandle;
         unsafe { gl::GenVertexArrays(1, &mut handle) };
+        check_gl_error();
         Self { handle }
     }
 
@@ -53,14 +58,17 @@ impl VertexArrayObject {
                 pointer as *const c_void,
             );
         };
+        check_gl_error();
         // Set the VertexAttribute pointer in this location
 
         // Finally, we enable the VertexAttribute in this location
         unsafe { gl::EnableVertexAttribArray(location) };
+        check_gl_error();
     }
 
     pub fn unbind(&self) {
         unsafe { gl::BindVertexArray(NullHandle) };
+        check_gl_error();
     }
 }
 
@@ -73,6 +81,7 @@ impl Default for VertexArrayObject {
 impl Object for VertexArrayObject {
     fn bind(&self) {
         unsafe { gl::BindVertexArray(self.handle) };
+        check_gl_error();
     }
 
     fn handle(&self) -> Handle {

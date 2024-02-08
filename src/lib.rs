@@ -1,4 +1,5 @@
 pub mod application;
 pub mod core;
+pub mod error;
 pub mod geometry;
 pub mod shader;

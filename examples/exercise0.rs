@@ -8,6 +8,7 @@ use itugl::{
         buffer_object::{BufferObject, Usage},
         object::Object,
     },
+    error::check_gl_error,
     geometry::{
         element_buffer_object::ElementBufferObject, vertex_array_object::VertexArrayObject,
         vertex_attribute::VertexAttribute, vertex_buffer_object::VertexBufferObject,
@@ -56,18 +57,18 @@ fn main() {
     let shader_program = build_shader_program();
 
     let vbo = VertexBufferObject::new();
-    vbo.bind();
+
     vbo.allocate_data(&vertices, Usage::StaticDraw);
 
     let ebo = ElementBufferObject::new();
-    ebo.bind();
     ebo.allocate_data(&indices, Usage::StaticDraw);
 
     let vao = VertexArrayObject::new();
     let attributes = VertexAttribute::new(itugl::core::data::Type::Float, 3, false);
     vao.bind();
+    vbo.bind();
+    ebo.bind();
     vao.set_attribute(0, &attributes, 0, 0);
-
     vbo.unbind();
     vao.unbind();
     ebo.unbind();
@@ -91,6 +92,7 @@ fn main() {
                 null(),
             )
         };
+        check_gl_error();
 
         // Swap front and back buffers
         window.inner_window.swap_buffers();
