@@ -42,11 +42,35 @@ impl Window {
             events,
         }
     }
+    pub fn clear(&self, r: f32, g: f32, b: f32, a: f32, depth: f64) {
+        let mut mask = 0;
 
-    pub fn clear(&self, r: f32, g: f32, b: f32, a: f32) {
+        unsafe { gl::ClearColor(r, g, b, a) };
+        check_gl_error();
+        mask |= gl::COLOR_BUFFER_BIT;
+
+        unsafe { gl::ClearDepth(depth) };
+        check_gl_error();
+        mask |= gl::DEPTH_BUFFER_BIT;
+
+        // glClearStencil(stencil);
+        // mask |= GL_STENCIL_BUFFER_BIT;
+
+        unsafe { gl::Clear(mask) };
+        check_gl_error();
+    }
+
+    pub fn clear_color(&self, r: f32, g: f32, b: f32, a: f32) {
         unsafe {
             gl::ClearColor(r, g, b, a);
             gl::Clear(gl::COLOR_BUFFER_BIT);
+        };
+        check_gl_error();
+    }
+    pub fn clear_depth(&self, depth: f64) {
+        unsafe {
+            gl::ClearDepth(depth);
+            gl::Clear(gl::DEPTH_BUFFER_BIT);
         };
         check_gl_error();
     }

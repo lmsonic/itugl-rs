@@ -75,11 +75,11 @@ fn main() {
 
     let size = window.inner_window.get_size();
     window.set_viewport(size.0, size.1);
-    window.clear(0.3, 0.3, 0.5, 1.0);
+    window.clear_color(0.3, 0.3, 0.5, 1.0);
 
     // Loop until the user closes the window
     while !window.inner_window.should_close() {
-        window.clear(0.3, 0.3, 0.5, 1.0);
+        window.clear_color(0.3, 0.3, 0.5, 1.0);
 
         // draw our first triangle
         shader_program.set_used();

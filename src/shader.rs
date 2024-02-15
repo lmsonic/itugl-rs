@@ -138,4 +138,8 @@ impl Program {
         }
         check_gl_error();
     }
+
+    pub fn id(&self) -> u32 {
+        self.id
+    }
 }
