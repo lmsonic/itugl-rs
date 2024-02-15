@@ -1,6 +1,6 @@
 use std::{ffi::CString, mem, ptr::null};
 
-use glfw::Action;
+use glfw::{Action, Key};
 use itugl::{
     application::{application::Application, window::Window},
     core::{
@@ -246,6 +246,59 @@ impl Application for TerrainApplication {
     }
 
     fn update(&mut self) {
+        self.window.glfw_mut().poll_events();
+        for (_, event) in glfw::flush_messages(&self.window.events) {
+            println!("{:?}", event);
+            match event {
+                glfw::WindowEvent::Key(key, _, Action::Press, _) => match key {
+                    Key::Escape => self.window.inner_window.set_should_close(true),
+                    glfw::Key::Num0 | glfw::Key::Num1 | glfw::Key::Num2 | glfw::Key::Num3 => {
+                        let i = match key {
+                            glfw::Key::Num0 => 0,
+                            glfw::Key::Num1 => 1,
+                            glfw::Key::Num2 => 2,
+                            glfw::Key::Num3 => 3,
+                            _ => 0,
+                        };
+                        let mode = CString::new("Mode").unwrap();
+                        let mode_location =
+                            unsafe { gl::GetUniformLocation(self.program.id(), mode.as_ptr()) };
+                        check_gl_error();
+                        self.program.set_used();
+                        unsafe { gl::Uniform1i(mode_location, i) };
+                        check_gl_error();
+                        break;
+                    }
+                    Key::Tab => {
+                        let proj_matrix = [
+                            0.0, -1.294, -0.721, -0.707, 1.83, 0.0, 0.0, 0.0, 0.0, 1.294, -0.721,
+                            -0.707, 0.0, 0.0, 1.24, 1.414,
+                        ];
+                        let matrix = CString::new("Matrix").unwrap();
+                        let matrix_location =
+                            unsafe { gl::GetUniformLocation(self.program.id(), matrix.as_ptr()) };
+                        check_gl_error();
+                        self.program.set_used();
+                        unsafe {
+                            gl::UniformMatrix4fv(
+                                matrix_location,
+                                1,
+                                gl::FALSE,
+                                proj_matrix.as_ptr(),
+                            )
+                        };
+                        check_gl_error();
+                    }
+                    _ => {}
+                },
+                glfw::WindowEvent::FramebufferSize(width, height) => {
+                    // make sure the viewport matches the new window dimensions; note that width and
+                    // height will be significantly larger than specified on retina displays.
+                    self.window.set_viewport(width, height);
+                }
+                _ => {}
+            }
+        }
         for i in 0..4 {
             let key = match i {
                 0 => glfw::Key::Num0,
