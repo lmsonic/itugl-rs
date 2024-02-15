@@ -78,6 +78,13 @@ fn create_whitespace_cstring_with_len(len: usize) -> CString {
 pub struct Program {
     id: gl::types::GLuint,
 }
+impl Drop for Program {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteProgram(self.id);
+        }
+    }
+}
 
 impl Program {
     pub fn from_shaders(shaders: &[Shader]) -> Result<Program, String> {

@@ -15,6 +15,9 @@ use itugl::{
     },
     shader::{self, Program, Shader},
 };
+use noise::{
+    core::perlin::perlin_2d, permutationtable::PermutationTable, Fbm, MultiFractal, NoiseFn, Perlin,
+};
 
 #[derive(Clone, Copy, Default)]
 #[repr(C)]
@@ -118,10 +121,14 @@ impl Application for TerrainApplication {
 
         // Grid scale to convert the entire grid to size 1x1
         let scale = Vector2::new(1.0 / self.grid_x as f32, 1.0 / self.grid_y as f32);
-
         // Number of columns and rows
         let column_count = self.grid_x + 1;
         let row_count = self.grid_y + 1;
+        let fbm: Fbm<Perlin> = Fbm::new(1)
+            .set_lacunarity(1.9)
+            .set_octaves(8)
+            .set_persistence(0.5)
+            .set_frequency(0.5);
         for j in 0..column_count {
             for i in 0..row_count {
                 // Vertex data for this vertex only
@@ -129,7 +136,7 @@ impl Application for TerrainApplication {
                 let mut vertex = Vertex::default();
                 let x = i as f32 * scale.x - 0.5;
                 let y = j as f32 * scale.y - 0.5;
-                let z = stb_perlin_fbm_noise3(x * 2.0, y * 2.0, 0.0, 1.9, 0.5, 8) * 0.5;
+                let z = fbm.get([x as f64 * 2.0, y as f64 * 2.0, 0.0]) as f32; //, 1.9, 0.5, 8) * 0.5;
                 vertex.position = Vector3::new(x, y, z);
                 vertex.tex_coord = Vector2::new(i as f32, j as f32);
                 vertex.color = get_color_from_height(z);
@@ -200,9 +207,11 @@ impl Application for TerrainApplication {
         let normal_offset = color_offset + color_attribute.get_size();
 
         // Allocate uninitialized data for the total size in the VBO
+        self.vbo.bind();
         self.vbo.allocate_data(&vertices, Usage::StaticDraw);
 
         // With VAO bound, bind EBO to register it (and allocate element buffer at the same time)
+        self.ebo.bind();
         self.ebo.allocate_data(&indices, Usage::StaticDraw);
 
         // The stride is not automatic now. Each attribute element is "sizeof(Vertex)" bytes apart from next
