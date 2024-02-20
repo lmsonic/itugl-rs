@@ -7,6 +7,35 @@ edition = "2021"
 
 [dependencies]
 gl = "0.14.0"
-glfw = "0.54.0"
+glfw = "0.55.0"
 log = "0.4.20"
 noise = "0.8.2"
+
+
+[lints.rust]
+# unsafe_code = "deny"
+keyword_idents = "warn"
+missing_copy_implementations = "warn"
+missing_debug_implementations = "warn"
+non_ascii_idents = "warn"
+noop_method_call = "warn"
+future_incompatible = { level = "warn", priority = -1 }
+nonstandard_style = { level = "warn", priority = -1 }
+rust_2018_idioms = "warn"
+#missing_docs = "warn"
+
+
+[lints.clippy]
+
+all = { level = "warn", priority = -1 }
+correctness = { level = "warn", priority = -1 }
+#restriction = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+missing_docs_in_private_items = "allow"
+module-name-repetitions = "allow"
+# needless_pass_by_value = "allow"
