@@ -90,7 +90,7 @@ fn main() {
                 indices.len() as GLsizei,
                 gl::UNSIGNED_INT,
                 null(),
-            )
+            );
         };
         check_gl_error();
 
@@ -98,10 +98,10 @@ fn main() {
         window.inner_window.swap_buffers();
         window.glfw_mut().poll_events();
         for (_, event) in glfw::flush_messages(&window.events) {
-            println!("{:?}", event);
+            println!("{event:?}");
             match event {
                 glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
-                    window.inner_window.set_should_close(true)
+                    window.inner_window.set_should_close(true);
                 }
                 glfw::WindowEvent::FramebufferSize(width, height) => {
                     // make sure the viewport matches the new window dimensions; note that width and

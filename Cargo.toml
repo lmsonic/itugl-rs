@@ -21,7 +21,7 @@ non_ascii_idents = "warn"
 noop_method_call = "warn"
 future_incompatible = { level = "warn", priority = -1 }
 nonstandard_style = { level = "warn", priority = -1 }
-rust_2018_idioms = "warn"
+# rust_2018_idioms = "warn"
 #missing_docs = "warn"
 
 
@@ -38,4 +38,4 @@ complexity = { level = "warn", priority = -1 }
 perf = { level = "warn", priority = -1 }
 missing_docs_in_private_items = "allow"
 module-name-repetitions = "allow"
-# needless_pass_by_value = "allow"
+needless_pass_by_value = "allow"

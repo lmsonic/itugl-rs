@@ -6,6 +6,7 @@ use crate::error::check_gl_error;
 
 use super::object::{NullHandle, Object};
 #[repr(u32)]
+#[derive(Clone, Copy, Debug)]
 pub enum Target {
     // Vertex Buffer Object
     ArrayBuffer = gl::ARRAY_BUFFER,
@@ -14,6 +15,7 @@ pub enum Target {
     // TODO: There are more types, add them when they are supported
 }
 #[repr(u32)]
+#[derive(Clone, Copy, Debug)]
 pub enum Usage {
     StaticDraw = gl::STATIC_DRAW,
     StaticRead = gl::STATIC_READ,
@@ -36,7 +38,7 @@ pub trait BufferObject: Object {
             gl::BufferData(
                 self.target() as GLenum,
                 std::mem::size_of_val(data) as gl::types::GLsizeiptr,
-                data.as_ptr() as *const gl::types::GLvoid,
+                data.as_ptr().cast::<gl::types::GLvoid>(),
                 usage as GLenum,
             );
         }
@@ -47,7 +49,7 @@ pub trait BufferObject: Object {
             gl::BufferData(
                 self.target() as GLenum,
                 size,
-                null() as *const c_void,
+                null::<c_void>(),
                 usage as GLenum,
             );
         }
@@ -59,7 +61,7 @@ pub trait BufferObject: Object {
                 self.target() as GLenum,
                 offset,
                 std::mem::size_of_val(data) as gl::types::GLsizeiptr,
-                data.as_ptr() as *const gl::types::GLvoid,
+                data.as_ptr().cast::<gl::types::GLvoid>(),
             );
         }
         check_gl_error();

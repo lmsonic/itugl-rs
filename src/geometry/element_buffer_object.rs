@@ -5,12 +5,13 @@ use crate::{
     },
     error::check_gl_error,
 };
-
+#[derive(Debug)]
 pub struct ElementBufferObject {
     handle: Handle,
 }
 
 impl ElementBufferObject {
+    #[must_use]
     pub fn new() -> Self {
         let mut handle = NullHandle;
         unsafe { gl::GenBuffers(1, &mut handle) };

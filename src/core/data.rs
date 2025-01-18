@@ -17,11 +17,11 @@ pub enum Type {
     // And more...
 }
 impl Type {
-    pub(crate) fn get_size(&self) -> GLint {
+    pub(crate) const fn get_size(self) -> GLint {
         match self {
-            Type::Byte | Type::UByte => 1,
-            Type::Short | Type::UShort | Type::Half => 2,
-            Type::Double => 8,
+            Self::Byte | Self::UByte => 1,
+            Self::Short | Self::UShort | Self::Half => 2,
+            Self::Double => 8,
             _ => 4,
         }
     }

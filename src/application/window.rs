@@ -3,12 +3,14 @@ use glfw::{fail_on_errors, Context, GlfwReceiver, PWindow, WindowEvent, WindowMo
 
 use crate::error::check_gl_error;
 
+#[derive(Debug)]
 pub struct Window {
     pub inner_window: PWindow,
     pub events: GlfwReceiver<(f64, WindowEvent)>,
 }
 
 impl Window {
+    #[must_use]
     pub fn glfw(&self) -> &glfw::Glfw {
         &self.inner_window.glfw
     }
@@ -33,7 +35,7 @@ impl Window {
             gl::DebugMessageCallback(
                 Some(crate::error::debug_callback),
                 std::ptr::null_mut::<GLvoid>(),
-            )
+            );
         };
         check_gl_error();
 

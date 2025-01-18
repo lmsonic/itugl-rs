@@ -2,6 +2,7 @@ use std::ffi::{CStr, CString};
 
 use crate::error::check_gl_error;
 
+#[derive(Debug)]
 pub struct Shader {
     id: gl::types::GLuint,
 }
@@ -19,15 +20,16 @@ impl Shader {
         let id = shader_from_source(source, kind)?;
         Ok(Self { id })
     }
-    pub fn from_vert_source(source: &CStr) -> Result<Shader, String> {
-        Shader::from_source(source, gl::VERTEX_SHADER)
+    pub fn from_vert_source(source: &CStr) -> Result<Self, String> {
+        Self::from_source(source, gl::VERTEX_SHADER)
     }
 
-    pub fn from_frag_source(source: &CStr) -> Result<Shader, String> {
-        Shader::from_source(source, gl::FRAGMENT_SHADER)
+    pub fn from_frag_source(source: &CStr) -> Result<Self, String> {
+        Self::from_source(source, gl::FRAGMENT_SHADER)
     }
 
-    pub fn id(&self) -> u32 {
+    #[must_use]
+    pub const fn id(&self) -> u32 {
         self.id
     }
 }
@@ -51,12 +53,7 @@ fn shader_from_source(source: &CStr, kind: gl::types::GLuint) -> Result<gl::type
         // convert buffer to CString
         let error: CString = create_whitespace_cstring_with_len(len as usize);
         unsafe {
-            gl::GetShaderInfoLog(
-                id,
-                len,
-                std::ptr::null_mut(),
-                error.as_ptr() as *mut gl::types::GLchar,
-            );
+            gl::GetShaderInfoLog(id, len, std::ptr::null_mut(), error.as_ptr().cast_mut());
         }
         check_gl_error();
 
@@ -70,11 +67,12 @@ fn create_whitespace_cstring_with_len(len: usize) -> CString {
     // allocate buffer of correct size
     let mut buffer: Vec<u8> = Vec::with_capacity(len + 1);
     // fill it with len spaces
-    buffer.extend([b' '].iter().cycle().take(len));
+    buffer.extend(std::iter::once(&b' ').cycle().take(len));
     // convert buffer to CString
     unsafe { CString::from_vec_unchecked(buffer) }
 }
 
+#[derive(Debug)]
 pub struct Program {
     id: gl::types::GLuint,
 }
@@ -87,7 +85,7 @@ impl Drop for Program {
 }
 
 impl Program {
-    pub fn from_shaders(shaders: &[Shader]) -> Result<Program, String> {
+    pub fn from_shaders(shaders: &[Shader]) -> Result<Self, String> {
         let program_id = unsafe { gl::CreateProgram() };
 
         for shader in shaders {
@@ -122,7 +120,7 @@ impl Program {
                     program_id,
                     len,
                     std::ptr::null_mut(),
-                    error.as_ptr() as *mut gl::types::GLchar,
+                    error.as_ptr().cast_mut(),
                 );
                 check_gl_error();
             }
@@ -137,7 +135,7 @@ impl Program {
             check_gl_error();
         }
 
-        Ok(Program { id: program_id })
+        Ok(Self { id: program_id })
     }
     pub fn set_used(&self) {
         unsafe {
@@ -146,7 +144,8 @@ impl Program {
         check_gl_error();
     }
 
-    pub fn id(&self) -> u32 {
+    #[must_use]
+    pub const fn id(&self) -> u32 {
         self.id
     }
 }

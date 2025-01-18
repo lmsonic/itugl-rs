@@ -14,30 +14,35 @@ pub fn check_gl_error() {
             _ => "Unknown Error",
         };
 
-        log::error!("OpenGL Error at FILE {} LINE {}: {}", file!(),line!(), error_string);
+        log::error!(
+            "OpenGL Error at FILE {} LINE {}: {}",
+            file!(),
+            line!(),
+            error_string
+        );
     }
 }
 
 fn print_err(s: &str) {
-    log::error!("{}", s) // might have been a println!
+    log::error!("{}", s); // might have been a println!
 }
 fn print_warn(s: &str) {
-    log::warn!("{}", s) // might have been a println!
+    log::warn!("{}", s); // might have been a println!
 }
 fn print_info(s: &str) {
-    log::info!("{}", s) // might have been a println!
+    log::info!("{}", s); // might have been a println!
 }
 fn print_debug(s: &str) {
-    log::info!("{}", s) // might have been a println!
+    log::info!("{}", s); // might have been a println!
 }
 pub extern "system" fn debug_callback(
     debug_source: u32,
     debug_type: u32,
     debug_id: u32,
     debug_severity: u32,
-    debug_length: i32,
+    _debug_length: i32,
     debug_message: *const i8,
-    user_param: *mut std::ffi::c_void,
+    _user_param: *mut std::ffi::c_void,
 ) {
     let raw_string_ptr: *const i8 = debug_message;
     let c_str = unsafe { CStr::from_ptr(raw_string_ptr) };
@@ -55,14 +60,9 @@ pub extern "system" fn debug_callback(
         _ => "Unknown",
     };
     let print_fn = match debug_type {
-        gl::DEBUG_TYPE_ERROR => print_err,
-        gl::DEBUG_TYPE_UNDEFINED_BEHAVIOR => print_err,
-        gl::DEBUG_TYPE_DEPRECATED_BEHAVIOR => print_warn,
-        gl::DEBUG_TYPE_PORTABILITY => print_warn,
-        gl::DEBUG_TYPE_PERFORMANCE => print_info,
-        gl::DEBUG_TYPE_MARKER => print_debug,
-        gl::DEBUG_TYPE_PUSH_GROUP => print_debug,
-        gl::DEBUG_TYPE_POP_GROUP => print_debug,
+        gl::DEBUG_TYPE_ERROR | gl::DEBUG_TYPE_UNDEFINED_BEHAVIOR => print_err,
+        gl::DEBUG_TYPE_DEPRECATED_BEHAVIOR | gl::DEBUG_TYPE_PORTABILITY => print_warn,
+        gl::DEBUG_TYPE_MARKER | gl::DEBUG_TYPE_PUSH_GROUP | gl::DEBUG_TYPE_POP_GROUP => print_debug,
         _ => print_info,
     };
     let source_str = match debug_source {
@@ -82,10 +82,5 @@ pub extern "system" fn debug_callback(
         _ => "Unknown",
     };
     print_fn(format!(
-        "DEBUG CALLBACK!\n\tsource = {},\n\ttype = {},\n\tid = {},\n\tseverity = {},\n\tmessage = {:?}\n",
-        source_str, 
-        type_str, 
-        debug_id, 
-        severity_str, 
-        debug_string).as_str());
+        "DEBUG CALLBACK!\n\tsource = {source_str},\n\ttype = {type_str},\n\tid = {debug_id},\n\tseverity = {severity_str},\n\tmessage = {debug_string:?}\n").as_str());
 }

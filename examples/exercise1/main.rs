@@ -15,9 +15,7 @@ use itugl::{
     },
     shader::{self, Program, Shader},
 };
-use noise::{
-    core::perlin::perlin_2d, permutationtable::PermutationTable, Fbm, MultiFractal, NoiseFn, Perlin,
-};
+use noise::{Fbm, MultiFractal, NoiseFn, Perlin};
 
 #[derive(Clone, Copy, Default)]
 #[repr(C)]
@@ -27,7 +25,7 @@ struct Vector2 {
 }
 
 impl Vector2 {
-    fn new(x: f32, y: f32) -> Self {
+    const fn new(x: f32, y: f32) -> Self {
         Self { x, y }
     }
 }
@@ -40,11 +38,14 @@ struct Vector3 {
 }
 
 impl Vector3 {
-    fn new(x: f32, y: f32, z: f32) -> Self {
+    const fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
     }
     fn normalize(&self) -> Self {
-        let length = f32::sqrt(self.x * self.x + self.y * self.y + self.z * self.z);
+        let length = f32::sqrt(
+            self.z
+                .mul_add(self.z, self.x.mul_add(self.x, self.y * self.y)),
+        );
         Self {
             x: self.x / length,
             y: self.y / length,
@@ -62,6 +63,7 @@ struct Vertex {
     normal: Vector3,
 }
 
+#[derive(Debug)]
 pub struct TerrainApplication {
     window: Window,
     delta_time: f32,
@@ -134,9 +136,9 @@ impl Application for TerrainApplication {
                 // Vertex data for this vertex only
 
                 let mut vertex = Vertex::default();
-                let x = i as f32 * scale.x - 0.5;
-                let y = j as f32 * scale.y - 0.5;
-                let z = fbm.get([x as f64 * 2.0, y as f64 * 2.0, 0.0]) as f32; //, 1.9, 0.5, 8) * 0.5;
+                let x = (i as f32).mul_add(scale.x, -0.5);
+                let y = (j as f32).mul_add(scale.y, -0.5);
+                let z = fbm.get([f64::from(x) * 2.0, f64::from(y) * 2.0, 0.0]) as f32; //, 1.9, 0.5, 8) * 0.5;
                 vertex.position = Vector3::new(x, y, z);
                 vertex.tex_coord = Vector2::new(i as f32, j as f32);
                 vertex.color = get_color_from_height(z);
@@ -248,13 +250,12 @@ impl Application for TerrainApplication {
     fn update(&mut self) {
         self.window.glfw_mut().poll_events();
         for (_, event) in glfw::flush_messages(&self.window.events) {
-            println!("{:?}", event);
+            println!("{event:?}");
             match event {
                 glfw::WindowEvent::Key(key, _, Action::Press, _) => match key {
                     Key::Escape => self.window.inner_window.set_should_close(true),
                     glfw::Key::Num0 | glfw::Key::Num1 | glfw::Key::Num2 | glfw::Key::Num3 => {
                         let i = match key {
-                            glfw::Key::Num0 => 0,
                             glfw::Key::Num1 => 1,
                             glfw::Key::Num2 => 2,
                             glfw::Key::Num3 => 3,
@@ -285,7 +286,7 @@ impl Application for TerrainApplication {
                                 1,
                                 gl::FALSE,
                                 proj_matrix.as_ptr(),
-                            )
+                            );
                         };
                         check_gl_error();
                     }
@@ -301,7 +302,6 @@ impl Application for TerrainApplication {
         }
         for i in 0..4 {
             let key = match i {
-                0 => glfw::Key::Num0,
                 1 => glfw::Key::Num1,
                 2 => glfw::Key::Num2,
                 3 => glfw::Key::Num3,
@@ -349,24 +349,13 @@ impl Application for TerrainApplication {
                 self.grid_x as i32 * self.grid_y as i32 * 6,
                 gl::UNSIGNED_INT,
                 null(),
-            )
+            );
         };
         check_gl_error();
 
         // No need to unbind every time
         //VertexArrayObject::Unbind();
     }
-}
-
-fn stb_perlin_fbm_noise3(
-    f32_1: f32,
-    f32_2: f32,
-    arg_1: f64,
-    arg_2: f64,
-    arg_3: f64,
-    arg_4: i32,
-) -> f32 {
-    1.0
 }
 
 fn get_color_from_height(height: f32) -> Vector3 {

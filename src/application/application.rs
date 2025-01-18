@@ -22,7 +22,7 @@ pub trait Application: Sized {
         // Main loop
         while self.is_running() {
             // set current time relative to start time
-            let duration = std::time::Instant::now() - start_time;
+            let duration = start_time.elapsed();
             self.update_time(duration.as_secs_f32());
 
             self.update();
