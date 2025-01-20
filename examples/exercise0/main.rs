@@ -3,9 +3,10 @@ use std::{f32::consts::PI, ffi::CString, ptr::null};
 use gl::types::GLsizei;
 use glfw::{Action, Context, Key};
 use itugl::{
-    application,
+    application::{self, window::Window},
     core::{
         buffer_object::{BufferObject, Usage},
+        data::Type,
         object::Object,
     },
     error::check_gl_error,
@@ -13,7 +14,7 @@ use itugl::{
         element_buffer_object::ElementBufferObject, vertex_array_object::VertexArrayObject,
         vertex_attribute::VertexAttribute, vertex_buffer_object::VertexBufferObject,
     },
-    shader::{self, Program, Shader},
+    shader::{Program, Shader},
 };
 
 // settings
@@ -22,12 +23,17 @@ const SCR_HEIGHT: u32 = 600;
 
 fn main() {
     // Create a windowed mode window and its OpenGL context
-    let mut window = application::window::Window::new(
+    let mut window = Window::new(
         SCR_WIDTH,
         SCR_HEIGHT,
         "LearnOpenGL",
         glfw::WindowMode::Windowed,
     );
+    let vertices = vec![
+        -0.5, -0.5, 0.0, // left
+        0.5, -0.5, 0.0, // right
+        0.0, 0.5, 0.0, // top
+    ];
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -64,7 +70,7 @@ fn main() {
     ebo.allocate_data(&indices, Usage::StaticDraw);
 
     let vao = VertexArrayObject::new();
-    let attributes = VertexAttribute::new(itugl::core::data::Type::Float, 3, false);
+    let attributes = VertexAttribute::new(Type::Float, 3, false);
     vao.bind();
     vbo.bind();
     ebo.bind();
@@ -92,13 +98,14 @@ fn main() {
                 null(),
             );
         };
+
         check_gl_error();
+        vao.unbind();
 
         // Swap front and back buffers
         window.inner_window.swap_buffers();
         window.glfw_mut().poll_events();
         for (_, event) in glfw::flush_messages(&window.events) {
-            println!("{event:?}");
             match event {
                 glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
                     window.inner_window.set_should_close(true);
@@ -122,5 +129,5 @@ fn build_shader_program() -> Program {
     let fragment_shader =
         Shader::from_frag_source(&CString::new(include_str!("triangle.frag")).unwrap()).unwrap();
 
-    shader::Program::from_shaders(&[vertex_shader, fragment_shader]).unwrap()
+    Program::from_shaders(&[vertex_shader, fragment_shader]).unwrap()
 }

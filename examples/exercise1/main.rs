@@ -90,11 +90,11 @@ impl Application for TerrainApplication {
             ebo: ElementBufferObject::new(),
         }
     }
-    fn window(&self) -> &itugl::application::window::Window {
+    fn window(&self) -> &Window {
         &self.window
     }
 
-    fn window_mut(&mut self) -> &mut itugl::application::window::Window {
+    fn window_mut(&mut self) -> &mut Window {
         &mut self.window
     }
 
@@ -250,7 +250,6 @@ impl Application for TerrainApplication {
     fn update(&mut self) {
         self.window.glfw_mut().poll_events();
         for (_, event) in glfw::flush_messages(&self.window.events) {
-            println!("{event:?}");
             match event {
                 glfw::WindowEvent::Key(key, _, Action::Press, _) => match key {
                     Key::Escape => self.window.inner_window.set_should_close(true),
@@ -383,5 +382,5 @@ fn build_shaders() -> Program {
     let fragment_shader =
         Shader::from_frag_source(&CString::new(include_str!("frag.frag")).unwrap()).unwrap();
 
-    shader::Program::from_shaders(&[vertex_shader, fragment_shader]).unwrap()
+    Program::from_shaders(&[vertex_shader, fragment_shader]).unwrap()
 }

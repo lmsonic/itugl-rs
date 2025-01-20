@@ -1,5 +1,6 @@
 use std::ffi::CStr;
 
+// #[cfg(debug_assertion)]
 pub fn check_gl_error() {
     let error_code = unsafe { gl::GetError() };
 
@@ -22,6 +23,10 @@ pub fn check_gl_error() {
         );
     }
 }
+
+// #[cfg(not(debug_assertion))]
+// #[allow(clippy::missing_const_for_fn)]
+// pub fn check_gl_error() {}
 
 fn print_err(s: &str) {
     log::error!("{}", s); // might have been a println!

@@ -11,6 +11,7 @@ impl Drop for Shader {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteShader(self.id);
+            check_gl_error();
         }
     }
 }
@@ -80,6 +81,7 @@ impl Drop for Program {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteProgram(self.id);
+            check_gl_error();
         }
     }
 }

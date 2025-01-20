@@ -22,7 +22,8 @@ impl Drop for VertexArrayObject {
 }
 
 impl VertexArrayObject {
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         let mut handle = NullHandle;
         unsafe { gl::GenVertexArrays(1, &mut handle) };
         check_gl_error();
