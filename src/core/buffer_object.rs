@@ -34,6 +34,7 @@ pub trait BufferObject: Object {
     }
     fn target(&self) -> Target;
     fn allocate_data<T>(&self, data: &[T], usage: Usage) {
+        self.bind();
         unsafe {
             gl::BufferData(
                 self.target() as GLenum,
@@ -42,6 +43,7 @@ pub trait BufferObject: Object {
                 usage as GLenum,
             );
         }
+        self.unbind();
         check_gl_error();
     }
     fn reserve_data(&self, size: GLsizeiptr, usage: Usage) {

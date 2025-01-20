@@ -2,6 +2,8 @@ use std::ffi::{CStr, CString};
 
 use crate::error::check_gl_error;
 
+pub type Location = gl::types::GLint;
+
 #[derive(Debug)]
 pub struct Shader {
     id: gl::types::GLuint,
@@ -149,5 +151,13 @@ impl Program {
     #[must_use]
     pub const fn id(&self) -> u32 {
         self.id
+    }
+
+    pub fn get_uniform_location(&self, name: &CStr) -> Location {
+        unsafe { gl::GetUniformLocation(self.id, name.as_ptr()) }
+    }
+
+    pub fn get_attribute_location(&self, name: &CStr) -> Location {
+        unsafe { gl::GetAttribLocation(self.id, name.as_ptr()) }
     }
 }

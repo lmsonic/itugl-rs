@@ -3,7 +3,7 @@ use std::{f32::consts::PI, ffi::CString, ptr::null};
 use gl::types::GLsizei;
 use glfw::{Action, Context, Key};
 use itugl::{
-    application::{self, window::Window},
+    application::window::Window,
     core::{
         buffer_object::{BufferObject, Usage},
         data::Type,
@@ -18,8 +18,8 @@ use itugl::{
 };
 
 // settings
-const SCR_WIDTH: u32 = 800;
-const SCR_HEIGHT: u32 = 600;
+const SCR_WIDTH: u32 = 400;
+const SCR_HEIGHT: u32 = 400;
 
 fn main() {
     // Create a windowed mode window and its OpenGL context
@@ -29,11 +29,6 @@ fn main() {
         "LearnOpenGL",
         glfw::WindowMode::Windowed,
     );
-    let vertices = vec![
-        -0.5, -0.5, 0.0, // left
-        0.5, -0.5, 0.0, // right
-        0.0, 0.5, 0.0, // top
-    ];
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -79,13 +74,9 @@ fn main() {
     vao.unbind();
     ebo.unbind();
 
-    let size = window.inner_window.get_size();
-    window.set_viewport(size.0, size.1);
-    window.clear_color(0.3, 0.3, 0.5, 1.0);
-
     // Loop until the user closes the window
     while !window.inner_window.should_close() {
-        window.clear_color(0.3, 0.3, 0.5, 1.0);
+        window.clear_color(0.2, 0.3, 0.3, 1.0);
 
         // draw our first triangle
         shader_program.set_used();

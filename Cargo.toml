@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 gl = "0.14.0"
+glam = "0.29.2"
 glfw = "0.55.0"
 log = "0.4.20"
 noise = "0.8.2"
@@ -46,3 +47,4 @@ cast_possible_truncation = "allow"
 cast_possible_wrap = "allow"
 missing_errors_doc = "allow"
 multiple_crate_versions = "allow"
+suboptimal_flops = "allow"

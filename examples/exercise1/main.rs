@@ -13,7 +13,7 @@ use itugl::{
         element_buffer_object::ElementBufferObject, vertex_array_object::VertexArrayObject,
         vertex_attribute::VertexAttribute, vertex_buffer_object::VertexBufferObject,
     },
-    shader::{self, Program, Shader},
+    shader::{Program, Shader},
 };
 use noise::{Fbm, MultiFractal, NoiseFn, Perlin};
 
