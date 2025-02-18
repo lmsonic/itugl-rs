@@ -1,12 +1,23 @@
-use std::ffi::CString;
+use std::{ffi::CString, mem};
 
+use gl::types::GLsizei;
 use glam::Vec2;
+use glfw::Action;
 use itugl::{
     application::{application::Application, window::Window},
-    core::{color::Color, data::Type},
-    geometry::vertex_attribute::VertexAttribute,
+    core::{
+        buffer_object::{BufferObject, Usage},
+        color::Color,
+        data::Type,
+        object::Object,
+    },
+    geometry::{
+        vertex_array_object::VertexArrayObject, vertex_attribute::VertexAttribute,
+        vertex_buffer_object::VertexBufferObject,
+    },
     shader::{Location, Program, Shader},
 };
+use rand::Rng;
 #[derive(Clone, Copy, Default)]
 #[repr(C)]
 struct Particle {
@@ -18,7 +29,7 @@ struct Particle {
     velocity: Vec2,
 }
 
-const vertex_attributes: [VertexAttribute; 6] = [
+const VERTEX_ATTRIBUTES: [VertexAttribute; 6] = [
     VertexAttribute::new(Type::Float, 2, false), // position
     VertexAttribute::new(Type::Float, 1, false), // size
     VertexAttribute::new(Type::Float, 1, false), // birth
@@ -38,18 +49,57 @@ pub struct ParticlesApplication {
     mouse_position: Vec2,
     particle_count: usize,
     particle_capacity: usize,
+    vao: VertexArrayObject,
+    vbo: VertexBufferObject,
 }
 impl ParticlesApplication {
-    fn initialize_geometry(&self) {}
+    fn emit_particle(
+        &mut self,
+        position: Vec2,
+        size: f32,
+        duration: f32,
+        color: Color,
+        velocity: Vec2,
+    ) {
+        let particle = Particle {
+            position,
+            size,
+            birth: self.current_time,
+            duration,
+            color,
+            velocity,
+        };
+        let particle_index = self.particle_count % self.particle_capacity;
+
+        let offset = particle_index * mem::size_of::<Particle>();
+        self.vbo.update_data(&[particle], 0);
+        self.particle_count += 1;
+    }
 }
 
 impl Application for ParticlesApplication {
     fn new(width: u32, height: u32, title: &str) -> Self {
         let mut window = Window::new(width, height, title, glfw::WindowMode::Windowed);
         window.enable_feature(gl::PROGRAM_POINT_SIZE);
-
+        window.enable_feature(gl::BLEND);
+        unsafe { gl::BlendFunc(gl::SRC_ALPHA, gl::ONE) };
+        window.set_vsync(true);
         let program = build_shaders();
+        let particle_capacity = 2048;
+        // initialize geometry
+        let vbo = VertexBufferObject::new();
+        vbo.reserve_data::<Particle>(2048, Usage::DynamicDraw);
 
+        let vao = VertexArrayObject::new();
+        vao.bind();
+        let stride = mem::size_of::<Particle>() as GLsizei;
+        let mut offset = 0;
+        let location = 0;
+        for attribute in VERTEX_ATTRIBUTES {
+            vao.set_attribute(location, &attribute, offset, stride);
+            offset += attribute.get_size();
+        }
+        vao.unbind();
         Self {
             delta_time: 0.0,
             current_time: 0.0,
@@ -57,9 +107,11 @@ impl Application for ParticlesApplication {
             current_gravity_uniform: program.get_uniform_location(c"Gravity"),
             mouse_position: window.get_mouse_position(false),
             particle_count: 0,
-            particle_capacity: 0,
+            particle_capacity,
             window,
             program,
+            vao,
+            vbo,
         }
     }
     fn window(&self) -> &Window {
@@ -86,16 +138,32 @@ impl Application for ParticlesApplication {
         &mut self.current_time
     }
 
-    fn initialize(&mut self) {
-        self.initialize_geometry();
-        self.window.enable_feature(gl::BLEND);
-        unsafe { gl::BlendFunc(gl::SRC_ALPHA, gl::ONE) };
-        self.window.set_vsync(true);
+    fn update(&mut self) {
+        let mouse_pos = self.window.get_mouse_position(true);
+
+        if self.window.is_mouse_button_pressed(glfw::MouseButtonLeft) == Action::Press {
+            let mut rng = rand::rng();
+            let size = rng.random_range(10.0..=30.0);
+            let duration = rng.random_range(1.0..=2.0);
+            let color = Color::random();
+            let velocity = 0.5 * (mouse_pos - self.mouse_position) * self.delta_time;
+            self.emit_particle(mouse_pos, size, duration, color, velocity);
+        }
+        self.mouse_position = mouse_pos;
     }
 
-    fn update(&mut self) {}
-
-    fn render(&mut self) {}
+    fn render(&mut self) {
+        self.window.clear_color(0.0, 0.0, 0.0, 0.0);
+        self.program.set_used();
+        self.program
+            .set_uniform1f(self.current_time_uniform, self.current_time);
+        self.program
+            .set_uniform1f(self.current_gravity_uniform, -9.8);
+        let particle_count = self.particle_count as i32;
+        let particle_capacity = self.particle_capacity as i32;
+        self.vao.bind();
+        unsafe { gl::DrawArrays(gl::POINTS, 0, particle_count.min(particle_capacity)) };
+    }
 }
 
 fn main() {
@@ -104,11 +172,11 @@ fn main() {
 }
 
 fn build_shaders() -> Program {
-    let vertex_shader =
-        Shader::from_vert_source(&CString::new(include_str!("vert.vert")).unwrap()).unwrap();
+    let cstr = CString::new(include_str!("vert.vert")).unwrap();
+    let vertex_shader = Shader::from_vert_source(&cstr).unwrap();
 
-    let fragment_shader =
-        Shader::from_frag_source(&CString::new(include_str!("frag.frag")).unwrap()).unwrap();
+    let cstr = CString::new(include_str!("frag.frag")).unwrap();
+    let fragment_shader = Shader::from_frag_source(&cstr).unwrap();
 
     Program::from_shaders(&[vertex_shader, fragment_shader]).unwrap()
 }

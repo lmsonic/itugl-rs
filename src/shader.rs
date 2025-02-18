@@ -1,5 +1,7 @@
 use std::ffi::{CStr, CString};
 
+use gl::types;
+
 use crate::error::check_gl_error;
 
 pub type Location = gl::types::GLint;
@@ -59,7 +61,6 @@ fn shader_from_source(source: &CStr, kind: gl::types::GLuint) -> Result<gl::type
             gl::GetShaderInfoLog(id, len, std::ptr::null_mut(), error.as_ptr().cast_mut());
         }
         check_gl_error();
-
         return Err(error.to_string_lossy().into_owned());
     }
 
@@ -159,5 +160,31 @@ impl Program {
 
     pub fn get_attribute_location(&self, name: &CStr) -> Location {
         unsafe { gl::GetAttribLocation(self.id, name.as_ptr()) }
+    }
+
+    pub fn set_uniform1f(&self, loc: Location, value: types::GLfloat) {
+        unsafe { gl::Uniform1f(loc, value) }
+    }
+    pub fn set_uniform2f(&self, loc: Location, v0: types::GLfloat, v1: types::GLfloat) {
+        unsafe { gl::Uniform2f(loc, v0, v1) }
+    }
+    pub fn set_uniform3f(
+        &self,
+        loc: Location,
+        v0: types::GLfloat,
+        v1: types::GLfloat,
+        v3: types::GLfloat,
+    ) {
+        unsafe { gl::Uniform3f(loc, v0, v1, v3) }
+    }
+    pub fn set_uniform4f(
+        &self,
+        loc: Location,
+        v0: types::GLfloat,
+        v1: types::GLfloat,
+        v3: types::GLfloat,
+        v4: types::GLfloat,
+    ) {
+        unsafe { gl::Uniform4f(loc, v0, v1, v3, v4) }
     }
 }

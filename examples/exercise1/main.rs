@@ -260,9 +260,9 @@ impl Application for TerrainApplication {
                             glfw::Key::Num3 => 3,
                             _ => 0,
                         };
-                        let mode = CString::new("Mode").unwrap();
+
                         let mode_location =
-                            unsafe { gl::GetUniformLocation(self.program.id(), mode.as_ptr()) };
+                            unsafe { gl::GetUniformLocation(self.program.id(), c"Mode".as_ptr()) };
                         check_gl_error();
                         self.program.set_used();
                         unsafe { gl::Uniform1i(mode_location, i) };
@@ -274,9 +274,9 @@ impl Application for TerrainApplication {
                             0.0, -1.294, -0.721, -0.707, 1.83, 0.0, 0.0, 0.0, 0.0, 1.294, -0.721,
                             -0.707, 0.0, 0.0, 1.24, 1.414,
                         ];
-                        let matrix = CString::new("Matrix").unwrap();
-                        let matrix_location =
-                            unsafe { gl::GetUniformLocation(self.program.id(), matrix.as_ptr()) };
+                        let matrix_location = unsafe {
+                            gl::GetUniformLocation(self.program.id(), c"Matrix".as_ptr())
+                        };
                         check_gl_error();
                         self.program.set_used();
                         unsafe {
@@ -307,9 +307,8 @@ impl Application for TerrainApplication {
                 _ => glfw::Key::Num0,
             };
             if self.window().inner_window.get_key(key) == Action::Press {
-                let mode = CString::new("Mode").unwrap();
                 let mode_location =
-                    unsafe { gl::GetUniformLocation(self.program.id(), mode.as_ptr()) };
+                    unsafe { gl::GetUniformLocation(self.program.id(), c"Mode".as_ptr()) };
                 check_gl_error();
                 self.program.set_used();
                 unsafe { gl::Uniform1ui(mode_location, i) };
@@ -322,9 +321,8 @@ impl Application for TerrainApplication {
                 0.0, -1.294, -0.721, -0.707, 1.83, 0.0, 0.0, 0.0, 0.0, 1.294, -0.721, -0.707, 0.0,
                 0.0, 1.24, 1.414,
             ];
-            let matrix = CString::new("Matrix").unwrap();
             let matrix_location =
-                unsafe { gl::GetUniformLocation(self.program.id(), matrix.as_ptr()) };
+                unsafe { gl::GetUniformLocation(self.program.id(), c"Matrix".as_ptr()) };
             check_gl_error();
             self.program.set_used();
             unsafe { gl::UniformMatrix4fv(matrix_location, 1, gl::FALSE, proj_matrix.as_ptr()) };
@@ -376,11 +374,12 @@ fn main() {
 }
 
 fn build_shaders() -> Program {
-    let vertex_shader =
-        Shader::from_vert_source(&CString::new(include_str!("vert.vert")).unwrap()).unwrap();
+    let cstr = CString::new(include_str!("vert.vert")).unwrap();
+    let vertex_shader = Shader::from_vert_source(&cstr).unwrap();
 
-    let fragment_shader =
-        Shader::from_frag_source(&CString::new(include_str!("frag.frag")).unwrap()).unwrap();
+    let cstr = CString::new(include_str!("frag.frag")).unwrap();
+
+    let fragment_shader = Shader::from_frag_source(&cstr).unwrap();
 
     Program::from_shaders(&[vertex_shader, fragment_shader]).unwrap()
 }

@@ -46,11 +46,11 @@ pub trait BufferObject: Object {
         self.unbind();
         check_gl_error();
     }
-    fn reserve_data(&self, size: GLsizeiptr, usage: Usage) {
+    fn reserve_data<T>(&self, size: usize, usage: Usage) {
         unsafe {
             gl::BufferData(
                 self.target() as GLenum,
-                size,
+                (size * size_of::<T>()) as gl::types::GLsizeiptr,
                 null::<c_void>(),
                 usage as GLenum,
             );
@@ -58,6 +58,7 @@ pub trait BufferObject: Object {
         check_gl_error();
     }
     fn update_data<T>(&self, data: &[T], offset: GLsizeiptr) {
+        self.bind();
         unsafe {
             gl::BufferSubData(
                 self.target() as GLenum,
@@ -66,6 +67,7 @@ pub trait BufferObject: Object {
                 data.as_ptr().cast::<gl::types::GLvoid>(),
             );
         }
+        self.unbind();
         check_gl_error();
     }
 }

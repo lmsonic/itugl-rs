@@ -1,6 +1,6 @@
 use gl::types::GLvoid;
 use glam::Vec2;
-use glfw::{fail_on_errors, Context, GlfwReceiver, PWindow, WindowEvent, WindowMode};
+use glfw::{fail_on_errors, Action, Context, GlfwReceiver, PWindow, WindowEvent, WindowMode};
 
 use crate::error::check_gl_error;
 
@@ -28,6 +28,9 @@ impl Window {
         }
         Vec2::new(x as f32, y as f32)
     }
+    pub fn is_mouse_button_pressed(&self, button: glfw::MouseButton) -> Action {
+        self.inner_window.get_mouse_button(button)
+    }
 
     pub fn enable_feature(&mut self, feature: gl::types::GLenum) {
         unsafe { gl::Enable(feature) };
@@ -52,7 +55,7 @@ impl Window {
     }
 
     pub fn new(width: u32, height: u32, title: &str, window_mode: WindowMode) -> Self {
-        let mut glfw = glfw::init(fail_on_errors!()).unwrap();
+        let mut glfw = glfw::init(fail_on_errors!()).expect("Unable to initialize GLFW");
         glfw.window_hint(glfw::WindowHint::ContextVersion(4, 1));
         glfw.window_hint(glfw::WindowHint::OpenGlProfile(
             glfw::OpenGlProfileHint::Core,

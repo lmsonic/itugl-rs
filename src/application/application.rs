@@ -34,9 +34,9 @@ pub trait Application: Sized {
             self.window_mut().glfw_mut().poll_events();
         }
     }
-    fn initialize(&mut self);
-    fn update(&mut self);
-    fn render(&mut self);
+    fn initialize(&mut self) {}
+    fn update(&mut self) {}
+    fn render(&mut self) {}
     fn is_running(&self) -> bool {
         !self.window().inner_window.should_close()
     }

@@ -6,13 +6,13 @@ use itugl::{
 };
 
 #[derive(Debug)]
-pub struct GearsApplication {
+pub struct SkeletonApplication {
     window: Window,
     delta_time: f32,
     current_time: f32,
 }
 
-impl Application for GearsApplication {
+impl Application for SkeletonApplication {
     fn new(width: u32, height: u32, title: &str) -> Self {
         Self {
             window: Window::new(width, height, title, glfw::WindowMode::Windowed),
@@ -52,7 +52,7 @@ impl Application for GearsApplication {
 }
 
 fn main() {
-    let app = GearsApplication::new(1024, 1024, "SkeletonDemo");
+    let app = SkeletonApplication::new(1024, 1024, "SkeletonDemo");
     app.run();
 }
 #[allow(dead_code)]

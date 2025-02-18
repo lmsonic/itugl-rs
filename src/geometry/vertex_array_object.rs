@@ -47,7 +47,7 @@ impl VertexArrayObject {
 
         // Compute the attribute pointer
         let mut pointer = null_mut::<u8>(); // Actual base pointer is in VBO
-        pointer = pointer.wrapping_add(offset.try_into().unwrap());
+        pointer = pointer.wrapping_add(offset as usize);
 
         unsafe {
             gl::VertexAttribPointer(
