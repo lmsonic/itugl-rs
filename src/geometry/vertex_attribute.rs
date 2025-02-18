@@ -1,6 +1,34 @@
-use gl::types::GLint;
+use gl::types::{GLint, GLsizei};
 
 use crate::core::data::{self, Type};
+#[derive(Clone, Copy, Debug)]
+pub struct Layout {
+    attribute: VertexAttribute,
+    offset: GLint,
+    stride: GLsizei,
+}
+
+impl Layout {
+    pub const fn new(attribute: VertexAttribute, offset: GLint, stride: GLsizei) -> Self {
+        Self {
+            attribute,
+            offset,
+            stride,
+        }
+    }
+
+    pub const fn attribute(&self) -> VertexAttribute {
+        self.attribute
+    }
+
+    pub const fn offset(&self) -> i32 {
+        self.offset
+    }
+
+    pub const fn stride(&self) -> i32 {
+        self.stride
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct VertexAttribute {

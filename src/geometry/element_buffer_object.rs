@@ -1,6 +1,7 @@
 use crate::{
     core::{
         buffer_object::{BufferObject, Target},
+        data,
         object::{Handle, NullHandle, Object},
     },
     error::check_gl_error,
@@ -8,6 +9,15 @@ use crate::{
 #[derive(Debug)]
 pub struct ElementBufferObject {
     handle: Handle,
+}
+
+impl ElementBufferObject {
+    pub const fn is_supported_type(value: data::Type) -> bool {
+        matches!(
+            value,
+            data::Type::UByte | data::Type::UShort | data::Type::UInt
+        )
+    }
 }
 
 impl ElementBufferObject {

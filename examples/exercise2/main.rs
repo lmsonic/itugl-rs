@@ -11,7 +11,6 @@ use itugl::{
         data::Type,
         object::Object,
     },
-    error::check_gl_error,
     geometry::{
         vertex_array_object::VertexArrayObject, vertex_attribute::VertexAttribute,
         vertex_buffer_object::VertexBufferObject,
