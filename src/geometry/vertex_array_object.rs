@@ -49,16 +49,28 @@ impl VertexArrayObject {
         let mut pointer = null_mut::<u8>(); // Actual base pointer is in VBO
         pointer = pointer.wrapping_add(offset as usize);
 
-        unsafe {
-            gl::VertexAttribPointer(
-                location,
-                components,
-                data_type,
-                normalized,
-                stride,
-                pointer as *const c_void,
-            );
-        };
+        if attribute.is_floating_point() || attribute.is_normalized() {
+            unsafe {
+                gl::VertexAttribPointer(
+                    location,
+                    components,
+                    data_type,
+                    normalized,
+                    stride,
+                    pointer as *const c_void,
+                );
+            };
+        } else {
+            unsafe {
+                gl::VertexAttribIPointer(
+                    location,
+                    components,
+                    data_type,
+                    stride,
+                    pointer as *const c_void,
+                )
+            };
+        }
         check_gl_error();
         // Set the VertexAttribute pointer in this location
 

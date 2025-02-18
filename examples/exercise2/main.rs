@@ -11,6 +11,7 @@ use itugl::{
         data::Type,
         object::Object,
     },
+    error::check_gl_error,
     geometry::{
         vertex_array_object::VertexArrayObject, vertex_attribute::VertexAttribute,
         vertex_buffer_object::VertexBufferObject,
@@ -70,9 +71,8 @@ impl ParticlesApplication {
             velocity,
         };
         let particle_index = self.particle_count % self.particle_capacity;
-
         let offset = particle_index * mem::size_of::<Particle>();
-        self.vbo.update_data(&[particle], 0);
+        self.vbo.update_data(&[particle], offset as isize);
         self.particle_count += 1;
     }
 }
@@ -88,15 +88,14 @@ impl Application for ParticlesApplication {
         let particle_capacity = 2048;
         // initialize geometry
         let vbo = VertexBufferObject::new();
-        vbo.reserve_data::<Particle>(2048, Usage::DynamicDraw);
+        vbo.reserve_data::<Particle>(particle_capacity, Usage::DynamicDraw);
 
         let vao = VertexArrayObject::new();
         vao.bind();
         let stride = mem::size_of::<Particle>() as GLsizei;
         let mut offset = 0;
-        let location = 0;
-        for attribute in VERTEX_ATTRIBUTES {
-            vao.set_attribute(location, &attribute, offset, stride);
+        for (location, attribute) in VERTEX_ATTRIBUTES.into_iter().enumerate() {
+            vao.set_attribute(location as u32, &attribute, offset, stride);
             offset += attribute.get_size();
         }
         vao.unbind();

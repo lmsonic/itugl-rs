@@ -47,6 +47,7 @@ pub trait BufferObject: Object {
         check_gl_error();
     }
     fn reserve_data<T>(&self, size: usize, usage: Usage) {
+        self.bind();
         unsafe {
             gl::BufferData(
                 self.target() as GLenum,
@@ -55,6 +56,7 @@ pub trait BufferObject: Object {
                 usage as GLenum,
             );
         }
+        self.unbind();
         check_gl_error();
     }
     fn update_data<T>(&self, data: &[T], offset: GLsizeiptr) {

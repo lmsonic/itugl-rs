@@ -37,4 +37,10 @@ impl VertexAttribute {
     pub const fn is_normalized(&self) -> bool {
         self.normalized
     }
+    #[must_use]
+    pub fn is_floating_point(&self) -> bool {
+        self.data_type == data::Type::Float
+            || self.data_type == data::Type::Double
+            || self.data_type == data::Type::Fixed
+    }
 }
